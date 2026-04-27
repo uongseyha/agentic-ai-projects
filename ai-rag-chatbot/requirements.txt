@@ -1,0 +1,9 @@
+python-dotenv
+ibm-watsonx-ai
+langchain-ibm
+langchain-text-splitters
+langchain-community
+langchain-classic
+gradio
+pypdf
+chromadb

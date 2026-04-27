@@ -1,0 +1,10 @@
+gradio
+youtube-transcript-api
+python-dotenv
+langchain
+ibm-watsonx-ai
+langchain-ibm
+langchain-text-splitters
+langchain-community
+langchain-classic
+faiss-cpu
