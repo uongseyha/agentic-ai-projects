@@ -2,6 +2,7 @@ import os
 import yaml
 import base64
 from crewai import Agent, Crew, Process, Task
+from crewai.tools import BaseTool
 from crewai.project import CrewBase, agent, crew, task
 from src.tools import (
     ExtractIngredientsTool, 
@@ -9,15 +10,12 @@ from src.tools import (
     DietaryFilterTool,
     NutrientAnalysisTool
 )
-from ibm_watsonx_ai import Credentials, APIClient
+from openai import OpenAI
 from src.models import RecipeSuggestionOutput, NutrientAnalysisOutput 
+from dotenv import load_dotenv
 
-credentials = Credentials(
-                   url = "https://us-south.ml.cloud.ibm.com",
-                   # api_key = "<YOUR_API_KEY>" # Normally you'd put an API key here, but we've got you covered here
-                  )
-client = APIClient(credentials)
-project_id = "skills-network"
+load_dotenv()
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Get the absolute path to the config directory
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "config")
@@ -41,10 +39,7 @@ class BaseNourishBotCrew:
     def ingredient_detection_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['ingredient_detection_agent'],
-            tools=[
-                ExtractIngredientsTool.extract_ingredient, 
-                FilterIngredientsTool.filter_ingredients
-            ],
+            tools=[ExtractIngredientsTool(), FilterIngredientsTool()],
             allow_delegation=False,
             max_iter=5,
             verbose=True
@@ -54,7 +49,7 @@ class BaseNourishBotCrew:
     def dietary_filtering_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['dietary_filtering_agent'],
-            tools=[DietaryFilterTool.filter_based_on_restrictions],
+            tools=[DietaryFilterTool()],
             allow_delegation=True,
             max_iter=6,
             verbose=True
@@ -64,7 +59,7 @@ class BaseNourishBotCrew:
     def nutrient_analysis_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['nutrient_analysis_agent'],
-            tools=[NutrientAnalysisTool.analyze_image],
+            tools=[NutrientAnalysisTool()],
             allow_delegation=False,
             max_iter=4,
             verbose=True

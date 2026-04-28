@@ -1,250 +1,189 @@
-# AI Document RAG QA Multi-Agents on LangGraph
+# Project List
 
-A document question-answering system that uses a multi-agent pipeline built on LangGraph to deliver accurate, verified answers from uploaded documents — rejecting off-topic queries and re-researching when answers fail verification.
-
----
-
-## Demo Walkthrough
-
-<video controls src="https://github.com/user-attachments/assets/68508387-6bd7-4fbc-a2f5-b6ac45b43ffc" title="AI Document RAG QA Multi-Agents on LangGraph"></video>
+<p align="center">
+  <img src="https://img.shields.io/badge/AI-Agentic%20Projects-5-orange" alt="Projects">
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
+</p>
 
 ---
 
-## Problem Statement
-
-Traditional RAG-based Q&A pipelines suffer from several failure modes:
-
-- **Hallucination** — the LLM fabricates facts not present in the source documents.
-- **Irrelevant answers** — the system answers questions that have nothing to do with the uploaded documents, producing confident but wrong responses.
-- **No quality gate** — once a draft answer is generated there is no mechanism to check whether it is actually supported by the retrieved context.
-
-These problems erode trust in document Q&A tools, especially in high-stakes domains where factual accuracy matters (research, compliance, technical documentation).
+A collection of AI-powered agentic applications demonstrating various LLM agent architectures, RAG implementations, and multi-modal AI solutions.
 
 ---
 
-## Objective
+## 📁 Projects Overview
 
-Build a self-correcting document Q&A system that:
-
-1. **Refuses off-topic questions** before spending compute on them.
-2. **Generates grounded answers** using only evidence retrieved from uploaded documents.
-3. **Verifies every answer** for factual support, unsupported claims, and contradictions — and retries if the answer fails verification.
-4. **Supports multiple document formats** (PDF, DOCX, TXT, Markdown) with a simple drag-and-drop web UI.
+| # | Project | Description | Key Tech |
+|---|---------|-------------|----------|
+| 1 | [ai-nutrition-coach-multi-agents-multimodal-crewai](#1-ai-nutrition-coach-multi-agents-multimodal-crewai) | Multi-agent nutrition coach that analyzes food images, provides nutritional insights, and generates recipe suggestions | CrewAI, GPT-4o Vision, Gradio |
+| 2 | [ai-doc-rag-qa-multi-agents-langgraph](#2-ai-doc-rag-qa-multi-agents-langgraph) | Self-correcting document Q&A system with multi-agent pipeline, verification, and relevance checking | LangGraph, LangChain, ChromaDB |
+| 3 | [ai-rag-chatbot](#3-ai-rag-chatbot) | PDF chatbot using RAG for natural language Q&A against uploaded documents | IBM watsonx, LangChain, ChromaDB |
+| 4 | [ai-youtube-summarizer](#4-ai-youtube-summarizer) | YouTube video summarizer and Q&A using transcript-based RAG | IBM watsonx, Gradio, FAISS |
+| 5 | [ai-youtube-summarizer](#5-ai-youtube-summarizer) | (See #4) | |
 
 ---
 
-## Processing Flow
+## 📋 Project Details
 
-```
-User uploads document(s) + enters question
-          │
-          ▼
-  Document Processor (Docling)
-  ┌─────────────────────────────┐
-  │ 1. Parse file to Markdown   │
-  │ 2. Split by Markdown headers│
-  │ 3. Cache chunks (SHA-256)   │
-  └────────────┬────────────────┘
-               │
-               ▼
-   Hybrid Retriever Builder
-  ┌─────────────────────────────┐
-  │ BM25 (keyword)   weight 0.4 │
-  │ ChromaDB (vector) weight 0.6│
-  │ → EnsembleRetriever         │
-  └────────────┬────────────────┘
-               │
-               ▼
-      LangGraph Workflow
-  ┌──────────────────────────────────────┐
-  │                                      │
-  │  [check_relevance]                   │
-  │   RelevanceChecker asks GPT-4o-mini  │
-  │   to classify: CAN_ANSWER /          │
-  │   PARTIAL / NO_MATCH                 │
-  │                                      │
-  │   NO_MATCH ──────────────────► END   │
-  │   (returns "not relevant" message)   │
-  │                                      │
-  │   CAN_ANSWER / PARTIAL               │
-  │         │                            │
-  │         ▼                            │
-  │   [research]                         │
-  │   ResearchAgent builds context from  │
-  │   retrieved chunks → GPT-4o-mini     │
-  │   generates draft answer             │
-  │         │                            │
-  │         ▼                            │
-  │   [verify]                           │
-  │   VerificationAgent checks draft     │
-  │   against context:                   │
-  │   • Supported: YES/NO                │
-  │   • Unsupported Claims               │
-  │   • Contradictions                   │
-  │   • Relevant: YES/NO                 │
-  │         │                            │
-  │  Supported:NO ──────────────► research (retry)
-  │  Relevant:NO  ──────────────► research (retry)
-  │         │                            │
-  │  All checks pass ───────────► END    │
-  └──────────────────────────────────────┘
-               │
-               ▼
-   Gradio UI displays:
-   • Answer
-   • Verification Report
+### 1. AI-Nutrition-Coach-Multi-Agents-Multimodal-CrewAI
+
+| Category | Details |
+|----------|---------|
+| **Description** | Multi-agent AI nutrition coach that uses computer vision to analyze food images, detect ingredients, filter by dietary restrictions, analyze nutrition, and generate recipe suggestions |
+| **Architecture** | CrewAI multi-agent framework with 4 specialized agents |
+| **Agents** | Vision AI Specialist, Nutritionist AI Specialist, Nutrition Analysis Specialist, Recipe Generation Specialist |
+| **Tech Stack** | `CrewAI`, `Gradio`, `OpenAI GPT-4o`, `Pydantic`, `PyYAML` |
+| **Input** | Food images (JPG, PNG) |
+| **Output** | Ingredient detection, nutritional analysis, recipe suggestions |
+
+```python
+# Key Components
+- ExtractIngredientsTool    # GPT-4o vision for ingredient detection
+- DietaryFilterTool         # LLM-based dietary restriction filtering
+- NutrientAnalysisTool     # Nutritional breakdown & calorie estimation
+- RecipeSuggestionAgent    # Recipe generation from filtered ingredients
 ```
 
 ---
 
-## Architecture
+### 2. AI-Doc-RAG-QA-Multi-Agents-LangGraph
 
-```
-ai-doc-rag-qa-multi-agents/
-│
-├── app.py                        # Gradio UI entry point (DocChat)
-│
-├── document_processor/
-│   └── file_handler.py           # Docling parser, MarkdownHeaderTextSplitter, pickle cache
-│
-├── retriever/
-│   └── builder.py                # BM25 + ChromaDB EnsembleRetriever
-│
-├── agents/
-│   ├── workflow.py               # LangGraph StateGraph — orchestrates all agents
-│   ├── relevance_checker.py      # Agent 1: classifies question vs. document relevance
-│   ├── research_agent.py         # Agent 2: generates draft answer from retrieved context
-│   └── verification_agent.py    # Agent 3: verifies draft answer for factual accuracy
-│
-├── config/
-│   ├── settings.py               # Pydantic Settings (env-driven config)
-│   └── constants.py              # File size limits, allowed types
-│
-├── utils/
-│   └── logging.py                # Shared logger
-│
-├── examples/                     # Sample PDFs for demo
-├── chroma_db/                    # Persisted ChromaDB vector store
-├── document_cache/               # SHA-256 keyed pickle cache for processed chunks
-└── requirements.txt
-```
+| Category | Details |
+|----------|---------|
+| **Description** | Self-correcting document Q&A system that uses multi-agent pipeline to deliver accurate, verified answers from uploaded documents — rejects off-topic queries and re-researches on verification failure |
+| **Architecture** | LangGraph state machine with 3 specialized agents |
+| **Agents** | Research Agent, Relevance Checker Agent, Verification Agent |
+| **Tech Stack** | `LangGraph`, `LangChain`, `ChromaDB`, `Docling`, `Gradio` |
+| **Input** | PDF, DOCX, TXT, Markdown documents |
+| **Output** | Grounded, verified answers with source citations |
 
-### LangGraph State Machine
-
-```
-                    ┌───────────────────┐
-                    │   AgentState      │
-                    │ • question        │
-                    │ • documents       │
-                    │ • draft_answer    │
-                    │ • verif. report   │
-                    │ • is_relevant     │
-                    │ • retriever       │
-                    └───────────────────┘
-
-ENTRY ──► [check_relevance] ──(NO_MATCH)──► END
-                │
-           (CAN_ANSWER / PARTIAL)
-                │
-                ▼
-          [research] ◄──────────────────────┐
-                │                           │
-                ▼                           │
-           [verify] ──(Supported/Relevant: NO)──┘
-                │
-           (all pass)
-                │
-               END
+```python
+# Key Components
+- DocumentProcessor    # Parse files to Markdown, split by headers, cache with SHA-256
+- HybridRetriever      # BM25 + embedding-based hybrid search
+- RelevanceChecker    # Determines if question is relevant to document
+- VerificationAgent   # Verifies answer against retrieved context
 ```
 
 ---
 
-## Tech Stack
+### 3. AI-RAG-Chatbot
 
-| Layer | Technology |
-|---|---|
-| Workflow Orchestration | [LangGraph](https://github.com/langchain-ai/langgraph) |
-| LLM | OpenAI `gpt-4o-mini` (research, verification, relevance check) |
-| Embeddings | OpenAI `text-embedding-ada-002` |
-| Vector Store | [ChromaDB](https://www.trychroma.com/) (persisted locally) |
-| Keyword Retrieval | BM25 (`langchain-community`) |
-| Hybrid Retrieval | `EnsembleRetriever` (BM25 40% + Vector 60%) |
-| Document Parsing | [Docling](https://github.com/DS4SD/docling) → Markdown |
-| Text Splitting | `MarkdownHeaderTextSplitter` (LangChain) |
-| Web UI | [Gradio](https://gradio.app/) |
-| Configuration | Pydantic Settings (`.env` file) |
-| Caching | SHA-256 pickle cache (7-day TTL) |
-| Language | Python 3.12 |
+| Category | Details |
+|----------|---------|
+| **Description** | Lightweight RAG chatbot that lets users upload any PDF and ask natural-language questions against it, powered by IBM watsonx.ai and LangChain |
+| **Architecture** | Single-pipeline RAG with document processing and semantic search |
+| **Tech Stack** | `IBM watsonx.ai`, `LangChain`, `ChromaDB`, `Gradio`, `PyPDFLoader` |
+| **Input** | PDF documents |
+| **Output** | Grounded answers with document citations |
 
----
-
-## Agents
-
-### 1. RelevanceChecker
-Retrieves the top-20 chunks from the hybrid retriever and asks the LLM to classify whether the question can be answered from the document content. Returns one of:
-- `CAN_ANSWER` — full information available, proceed.
-- `PARTIAL` — topic mentioned but incomplete, proceed anyway.
-- `NO_MATCH` — question is unrelated; workflow terminates with a rejection message.
-
-### 2. ResearchAgent
-Concatenates all retrieved document chunks into a single context string and prompts GPT-4o-mini to produce a concise, factual draft answer. Includes exponential-backoff retry on rate-limit errors (up to 5 attempts).
-
-### 3. VerificationAgent
-Takes the draft answer and the same document context, then asks GPT-4o-mini to produce a structured verification report:
-- **Supported** — is the answer grounded in the context?
-- **Unsupported Claims** — any claims not backed by the documents.
-- **Contradictions** — any statements that conflict with the context.
-- **Relevant** — does the answer address the question?
-
-If `Supported: NO` or `Relevant: NO`, the workflow loops back to the ResearchAgent for a retry.
+```python
+# Key Components
+- PyPDFLoader          # Extract text from PDF pages
+- TextSplitter         # Split into overlapping chunks (1000 chars / 50 overlap)
+- watsonx Embeddings  # IBM slate-125m model for vectorization
+- ChromaDB             # Vector store for similarity search
+- watsonx LLM          # Generate answers from retrieved context
+```
 
 ---
 
-## Getting Started
+### 4. AI-YouTube-Summarizer
 
-### Prerequisites
+| Category | Details |
+|----------|---------|
+| **Description** | RAG application that extracts YouTube video transcripts and uses IBM WatsonX foundation models to generate summaries and answer natural language questions about video content |
+| **Architecture** | Dual-flow: Summarize flow + Q&A flow (RAG) |
+| **Tech Stack** | `IBM watsonx.ai`, `Gradio`, `YouTubeTranscriptApi`, `FAISS` |
+| **Input** | YouTube video URLs (with English transcripts) |
+| **Output** | AI-generated video summaries, contextual Q&A answers |
 
-- Python 3.12+
-- OpenAI API key
+```python
+# Key Components
+- transcript.py        # Extract English transcripts from YouTube videos
+- chains.py            # LLM chains for summarization and Q&A
+- vector_store.py     # FAISS index for semantic search over transcripts
+- watsonx LLMs        # Granite & Slate models for generation
+```
 
-### Installation
+---
+
+## 🛠️ Tech Stack Summary
+
+| Technology | Projects | Usage |
+|------------|----------|-------|
+| **CrewAI** | #1 | Multi-agent orchestration |
+| **LangGraph** | #2 | State machine & agent workflows |
+| **LangChain** | #2, #3 | RAG pipeline & chain abstractions |
+| **OpenAI GPT-4o** | #1 | Vision & text processing |
+| **IBM watsonx.ai** | #3, #4 | LLM & embeddings |
+| **ChromaDB** | #2, #3 | Vector database |
+| **FAISS** | #4 | Vector similarity search |
+| **Gradio** | #1, #2, #3, #4 | Web UI |
+| **Pydantic** | #1 | Data validation |
+| **PyYAML** | #1 | Configuration |
+
+---
+
+## 🚀 Quick Start
 
 ```bash
-git clone <repo-url>
-cd ai-doc-rag-qa-multi-agents
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+# Navigate to any project
+cd ai-nutrition-coach-multi-agents-multimodal-crewai
+
+# Install dependencies
 pip install -r requirements.txt
-```
 
-### Configuration
+# Configure API keys
+# Create .env file with required keys (OPENAI_API_KEY, etc.)
 
-Create a `.env` file in the project root:
-
-```env
-OPENAI_API_KEY=sk-...
-CHROMA_DB_PATH=./chroma_db
-VECTOR_SEARCH_K=10
-HYBRID_RETRIEVER_WEIGHTS=[0.4, 0.6]
-CACHE_DIR=document_cache
-CACHE_EXPIRE_DAYS=7
-```
-
-### Run
-
-```bash
+# Run the application
 python app.py
 ```
 
-Open `http://127.0.0.1:5000` in your browser. Upload one or more documents (`.pdf`, `.docx`, `.txt`, `.md`), type a question, and click **Submit**.
+---
+
+## 📂 Project Structure
+
+```
+agentic-ai-projects/
+├── README.md
+├── requirements.txt
+├── ai-nutrition-coach-multi-agents-multimodal-crewai/
+│   ├── app.py              # Gradio UI
+│   ├── src/
+│   │   ├── crew.py         # CrewAI crews
+│   │   ├── tools.py        # Custom tools
+│   │   ├── models.py       # Pydantic models
+│   │   └── config/        # Agent & task configs
+│   └── examples/
+├── ai-doc-rag-qa-multi-agents-langgraph/
+│   ├── app.py
+│   ├── agents/             # Agent implementations
+│   ├── retriever/          # Retrieval logic
+│   └── chroma_db/          # Vector store
+├── ai-rag-chatbot/
+│   ├── main.py
+│   └── modules/           # Loader, splitter, retriever, etc.
+└── ai-youtube-summarizer/
+    ├── app.py
+    ├── chains.py
+    └── transcript.py
+```
 
 ---
 
-## Example Queries
+## 🔑 Key Features
 
-| Document | Example Question |
-|---|---|
-| Google 2024 Environmental Report | "Retrieve the data center PUE efficiency values in Singapore 2nd facility in 2019 and 2022. Also retrieve regional average CFE in Asia Pacific in 2023." |
-| DeepSeek-R1 Technical Report | "Summarize DeepSeek-R1 model's performance evaluation on all coding tasks against OpenAI o1-mini model." |
+| Project | Features |
+|---------|----------|
+| #1 | Image-based ingredient detection, dietary filtering, nutritional analysis, recipe generation |
+| #2 | Multi-agent verification, relevance checking, self-correcting pipeline, multi-format support |
+| #3 | PDF upload at runtime, natural language Q&A, grounded answers with citations |
+| #4 | YouTube transcript extraction, AI summarization, contextual Q&A without hallucination |
 
-Pre-loaded examples are available via the dropdown in the UI.
+---
+
+## 📄 License
+
+MIT License - See individual project READMEs for details

@@ -1,134 +1,409 @@
+# AI-Nutrition-coach-multi-agents-multimodal-crewai
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11+-blue?logo=python" alt="Python">
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
+  <img src="https://img.shields.io/badge/AI-Multi--Agent-orange" alt="AI Agent">
+</p>
+
 ---
-title: AI_NutriCoach
-app_file: app.py
-sdk: gradio
-sdk_version: 5.12.0
+
+## Demo Walkthrough
+
+<video controls src="https://github.com/user-attachments/assets/150a5629-073f-458c-861f-7980fe1c0d80" title="AI-Nutrition-coach-multi-agents-multimodal-crewai"></video>
+
 ---
-# AI NutriCoach (aka AI Dietary Crew)
 
-AI NutriCoach is an AI-powered nutrition assistant that leverages advanced vision models and natural language processing to detect ingredients from food images, filter ingredients based on dietary restrictions, estimate calories, provide detailed nutrient analysis, and generate recipe suggestions. This project demonstrates the use of CrewAI, WatsonX, and other AI tools to deliver insightful and personalized nutritional feedback.
+## � Project Description
 
-## Features
+**AI NourishBot** is a multi-agent AI nutrition coach that uses computer vision and large language models to analyze food images, provide nutritional insights, and generate recipe suggestions.
 
-- **Ingredient Detection**  
-  Detects ingredients from user-uploaded images using a vision AI model.
+### What It Does
 
-- **Dietary Filtering**  
-  Filters detected ingredients based on user-defined dietary restrictions (e.g., vegan, gluten-free).
+| Feature | Description |
+|---------|-------------|
+| **Image-Based Ingredient Detection** | Upload any food photo and GPT-4o vision identifies all ingredients automatically |
+| **Dietary Restriction Filtering** | Filter ingredients based on diets: vegan, vegetarian, gluten-free, keto, paleo, dairy-free, nut-free |
+| **Nutritional Analysis** | Get detailed breakdown of macros (protein, carbs, fats), vitamins, minerals, and total calories |
+| **Health Evaluation** | Receive an expert assessment of the meal's health benefits and concerns |
+| **Recipe Generation** | Get creative recipe ideas using detected ingredients that match your dietary needs |
 
-- **Calorie Estimation**  
-  Estimates total calories from the detected ingredients.
+### How It Works
 
-- **Nutrient Analysis**  
-  Provides a detailed breakdown of key nutrients such as protein, carbohydrates, fats, vitamins, and minerals.
+The system uses **CrewAI's multi-agent framework** with four specialized AI agents:
 
-- **Health Evaluation**  
-  Summarizes the overall healthiness of the meal and provides a health evaluation.
+1. **Vision AI Specialist** — Detects ingredients from food images using GPT-4o
+2. **Nutritionist AI Specialist** — Filters ingredients based on dietary restrictions
+3. **Nutrition Analysis Specialist** — Analyzes nutritional content and provides health evaluation
+4. **Recipe Generation Specialist** — Creates recipe suggestions from filtered ingredients
 
-- **Recipe Suggestion**  
-  Generates recipe ideas based on the filtered ingredients and dietary restrictions.
+Each agent has specific tools and tasks, working together through a sequential workflow to deliver comprehensive nutrition insights.
 
-## How It Works
+### Use Cases
 
-The project is built using the CrewAI framework, which organizes agents and tasks into workflows for two primary use cases:
+- 🥗 **Health-conscious individuals** tracking daily nutrition
+- 🍳 **Home cooks** looking for recipe inspiration from fridge contents
+- 🏋️ **Fitness enthusiasts** calculating macro/calorie intake
+- 🥦 **People with dietary restrictions** ensuring meal compliance
+- 📸 **Food bloggers** analyzing dish nutrition quickly
 
-1. **Recipe Workflow**  
-   Detects ingredients, filters them based on dietary restrictions, and suggests recipes.
+---
 
-2. **Analysis Workflow**  
-   Directly estimates calories, performs nutrient analysis, and provides a health evaluation summary from a food image.
+## �📋 Problem Statement
 
-## Installation
+Modern users struggle with:
 
-### Prerequisites
+| Problem | Description |
+|---------|-------------|
+| **Manual Nutrition Tracking** | Manually logging food intake is time-consuming and error-prone |
+| **Limited Food Recognition** | Existing apps require text input or barcode scanning |
+| **Dietary Compliance** | Users with specific diets (vegan, gluten-free, keto) need automated filtering |
+| **Calorie Estimation** | Estimating calories and nutrients from meals is challenging |
+| **Recipe Discovery** | Finding recipes that match available ingredients and dietary needs |
 
-- Python 3.8+
-- Virtual environment (optional but recommended)
-- Git
+Users want a seamless way to:
+- Upload a photo of their meal
+- Automatically detect ingredients via computer vision
+- Filter based on dietary restrictions
+- Get nutritional analysis
+- Receive recipe suggestions
 
-### Setup Instructions
+---
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/HaileyTQuach/Smart-Nutritional-App.git
-   cd Smart-Nutritional-App
-   ```
-2. **Create and activate a virtual environment**:
-  ```bash
-  python -m venv venv
-  source venv/bin/activate  # On Windows: venv\Scripts\activate
-  ```
-3. **Install the required dependencies:**
-  ```bash
-  pip install -r requirements.txt
-  ```
-4. **Create a .env file in the root directory with the following keys**:
-   ```bash
-    WATSONX_API_KEY=your_watsonx_api_key
-    WATSONX_URL=your_watsonx_url
-    WATSONX_PROJECT_ID=your_watsonx_project_id
-   ```
-## Usage
-### Run the Application
+## 🎯 Objective
 
-You can run the application using the following commands:
+Build an **AI-powered multimodal nutrition coach** that:
 
-1. For recipe suggestions
+1. **Accepts food images** as input via a user-friendly Gradio interface
+2. **Uses GPT-4o vision capabilities** to detect and identify ingredients
+3. **Filters ingredients** based on user dietary restrictions (vegan, gluten-free, keto, etc.)
+4. **Analyzes nutritional content** including macros, vitamins, minerals, and calories
+5. **Suggests recipes** using detected/filtered ingredients that meet dietary goals
 
-```bash
-python main.py <image_path> <dietary_restrictions> recipe
-```
+The system leverages **CrewAI's multi-agent framework** to orchestrate specialized AI agents for each task.
 
-Example:
+---
 
-```bash
-python main.py food.jpg vegan recipe
-```
+## 🔄 Project Processing Detail
 
-2. For food analysis
-
-```bash
-python main.py <image_path> analysis
-```
-
-Example:
-
-```bash
-python main.py food.jpg analysis
-```
-
-3. For training (future functionality - TODO)
-
-```bash
-python main.py train <n_iterations> <output_filename> <image_path> <dietary_restrictions> <workflow_type>
-```
-
-## File Structure
+### Workflow 1: Recipe Suggestion Flow
 
 ```
-Smart-Nutritional-App-Crew/
-│
-├── config/
-│   ├── agents.yaml               # Configuration for agents
-│   └── tasks.yaml                # Configuration for tasks
-│
+┌─────────────────┐     ┌──────────────────────┐     ┌─────────────────────┐
+│   User Upload   │────▶│  Ingredient Detection│────▶│ Dietary Filtering   │
+│   Food Image    │     │       Agent          │     │       Agent         │
+└─────────────────┘     └──────────────────────┘     └─────────────────────┘
+                                │                                    │
+                                ▼                                    ▼
+                        ExtractIngredients                   FilterIngredients
+                        Tool + FilterIngredients            Tool + DietaryFilter
+                                │                                    │
+                                ▼                                    ▼
+                        ┌──────────────────────┐     ┌─────────────────────┐
+                        │  Detected Ingredients │────▶│ Filtered Ingredients │
+                        └──────────────────────┘     └─────────────────────┘
+                                                              │
+                                                              ▼
+                                                ┌─────────────────────┐
+                                                │ Recipe Suggestion   │
+                                                │       Agent         │
+                                                └─────────────────────┘
+                                                              │
+                                                              ▼
+                                                ┌─────────────────────┐
+                                                │  Recipe Ideas with  │
+                                                │  Instructions &     │
+                                                │  Calorie Estimates  │
+                                                └─────────────────────┘
+```
+
+### Workflow 2: Nutritional Analysis Flow
+
+```
+┌─────────────────┐     ┌──────────────────────┐
+│   User Upload   │────▶│  Nutrient Analysis    │
+│   Food Image    │     │       Agent          │
+└─────────────────┘     └──────────────────────┘
+                                │
+                                ▼
+                        ┌──────────────────────┐
+                        │  NutrientAnalysis    │
+                        │        Tool          │
+                        └──────────────────────┘
+                                │
+                                ▼
+                        ┌──────────────────────┐
+                        │  Detailed Nutrient   │
+                        │  Breakdown + Health  │
+                        │    Evaluation        │
+                        └──────────────────────┘
+```
+
+### Step-by-Step Processing
+
+| Step | Agent | Tool | Input | Output |
+|------|-------|------|-------|--------|
+| 1 | **Ingredient Detection Agent** | `ExtractIngredientsTool`, `FilterIngredientsTool` | Food image | Raw ingredient list |
+| 2 | **Dietary Filtering Agent** | `DietaryFilterTool` | Raw ingredients + dietary restrictions | Filtered ingredient list |
+| 3 | **Nutrient Analysis Agent** | `NutrientAnalysisTool` | Food image | Macronutrients, vitamins, minerals, calories |
+| 4 | **Recipe Suggestion Agent** | (LLM only) | Filtered ingredients | Recipe ideas with instructions |
+
+### Data Flow Example
+
+```python
+# Input
+image = "food_photo.jpg"
+dietary_restrictions = "vegan"
+
+# Processing Pipeline
+1. Image → GPT-4o Vision → ["chicken", "rice", "broccoli", "soy sauce"]
+2. Ingredients + "vegan" → LLM Filter → ["rice", "broccoli"]  # removed chicken
+3. Filtered ingredients → Recipe Agent → [Recipe 1, Recipe 2, Recipe 3]
+
+# Output
+recipes = [
+    {
+        "title": "Vegan Buddha Bowl",
+        "ingredients": ["rice", "broccoli", "chickpeas", "tahini"],
+        "instructions": "...",
+        "calorie_estimate": 450
+    },
+    ...
+]
+```
+
+---
+
+## 🏗️ Architecture ASCII Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           AI NourishBot Architecture                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                              ┌─────────────────────┐
+                              │   Gradio Web UI     │
+                              │   (User Interface)  │
+                              └──────────┬──────────┘
+                                         │
+                                         ▼
+                              ┌─────────────────────┐
+                              │      app.py         │
+                              │  (Main Controller)  │
+                              └──────────┬──────────┘
+                                         │
+                    ┌────────────────────┴────────────────────┐
+                    │                                             │
+                    ▼                                             ▼
+      ┌─────────────────────────────┐           ┌─────────────────────────────┐
+      │   NourishBotRecipeCrew      │           │   NourishBotAnalysisCrew   │
+      │   (Sequential Process)      │           │   (Sequential Process)      │
+      └─────────────┬───────────────┘           └─────────────┬───────────────┘
+                    │                                             │
+        ┌───────────┼───────────┬───────────┐                     │
+        ▼           ▼           ▼           ▼                     ▼
+   ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐      ┌───────────────┐
+   │Ingredient│ │ Dietary │ │ Recipe  │ │  Task   │      │  Nutrient     │
+   │Detection │ │Filtering│ │Suggestion│ │Output   │      │  Analysis     │
+   │  Agent   │ │  Agent  │ │  Agent  │ │(JSON)   │      │    Agent      │
+   └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘      └───────┬───────┘
+        │           │           │           │                    │
+        ▼           ▼           ▼           ▼                    ▼
+   ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐      ┌───────────────┐
+   │Extract  │ │Dietary  │ │   LLM   │ │ Recipe  │      │   Nutrient    │
+   │Ingredients│Filter   │ │ (GPT-4o)│ │Output   │      │   Analysis    │
+   │  Tool   │ │  Tool   │ │         │ │ Model   │      │     Tool      │
+   └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘      └───────┬───────┘
+        │           │           │           │                    │
+        └───────────┴───────────┴───────────┴────────────────────┘
+                                        │
+                                        ▼
+                              ┌─────────────────────┐
+                              │   Output Models     │
+                              │  (Pydantic Base)    │
+                              └─────────────────────┘
+```
+
+### Component Details
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                           COMPONENT LAYERS                              │
+├────────────────────────────────────────────────────────────────────────┤
+│                                                                        │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                    PRESENTATION LAYER                           │   │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐   │   │
+│  │  │  Gradio UI  │  │   Custom    │  │   Output Formatter  │   │   │
+│  │  │  Interface  │  │   CSS/JS    │  │   (Markdown/Tables) │   │   │
+│  │  └─────────────┘  └─────────────┘  └─────────────────────┘   │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                   │                                      │
+│                                   ▼                                      │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                      ORCHESTRATION LAYER                       │   │
+│  │  ┌─────────────────────────────────────────────────────────┐  │   │
+│  │  │                    CrewAI Framework                      │  │   │
+│  │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │  │   │
+│  │  │  │   Agent 1   │  │   Agent 2   │  │   Agent 3   │     │  │   │
+│  │  │  │ (Detection)│  │ (Filtering) │  │ (Analysis)  │     │  │   │
+│  │  │  └─────────────┘  └─────────────┘  └─────────────┘     │  │   │
+│  │  │         │                 │                 │          │  │   │
+│  │  │         └─────────────────┼─────────────────┘          │  │   │
+│  │  │                           ▼                            │  │   │
+│  │  │              ┌────────────────────────┐               │  │   │
+│  │  │              │   Task Coordination    │               │  │   │
+│  │  │              │   (Sequential Flow)    │               │  │   │
+│  │  │              └────────────────────────┘               │  │   │
+│  │  └─────────────────────────────────────────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                   │                                      │
+│                                   ▼                                      │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                       TOOL LAYER                                │   │
+│  │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐           │   │
+│  │  │  Extract     │ │  Dietary    │ │  Nutrient    │           │   │
+│  │  │  Ingredients │ │  Filter      │ │  Analysis    │           │   │
+│  │  │    Tool      │ │    Tool      │ │    Tool      │           │   │
+│  │  └──────────────┘ └──────────────┘ └──────────────┘           │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                   │                                      │
+│                                   ▼                                      │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                      MODEL LAYER                                │   │
+│  │  ┌──────────────────────┐  ┌────────────────────────────────┐  │   │
+│  │  │   GPT-4o (Vision)   │  │   GPT-4o-mini (Text)            │  │   │
+│  │  │   - Image Analysis   │  │   - Text Processing            │  │   │
+│  │  │   - Ingredient Det. │  │   - Filtering                   │  │   │
+│  │  └──────────────────────┘  └────────────────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technology | Version | Purpose |
+|----------|------------|---------|---------|
+| **Framework** | [CrewAI](https://crewai.com) | Latest | Multi-agent orchestration |
+| **UI** | [Gradio](https://gradio.app) | Latest | Web interface for image upload |
+| **LLM (Vision)** | OpenAI GPT-4o | Latest | Image analysis & ingredient detection |
+| **LLM (Text)** | OpenAI GPT-4o-mini | Latest | Text processing & filtering |
+| **Data Models** | [Pydantic](https://docs.pydantic.dev) | v2 | Schema validation & output models |
+| **Config** | [PyYAML](https://pyyaml.org) | Latest | Agent & task configuration |
+| **Environment** | python-dotenv | Latest | API key management |
+| **Image Processing** | Pillow (PIL) | Latest | Image handling |
+
+### Dependencies
+
+```txt
+crewai>=0.28.0
+gradio>=4.0.0
+openai>=1.0.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+pyyaml>=6.0
+pillow>=10.0.0
+requests>=2.31.0
+```
+
+### Project Structure
+
+```
+ai-nutrition-coach-multi-agents-multimodal-crewai/
+├── app.py                      # Main Gradio application
+├── .env                        # Environment variables (API keys)
 ├── src/
-│   ├── crew.py                   # Crew definitions (agents, tasks, workflows)
-│   ├── tools.py                  # Tool definitions for ingredient detection, filtering, etc.
-│   └── main.py                   # Main script for running the application
-│
-├── requirements.txt              # Python dependencies
-└── README.md                     # Project documentation
+│   ├── crew.py                # CrewAI crew definitions
+│   ├── models.py              # Pydantic output models
+│   ├── tools.py               # Custom CrewAI tools
+│   └── config/
+│       ├── agents.yaml        # Agent configurations
+│       └── tasks.yaml         # Task definitions
+└── examples/                  # Example usage
 ```
 
-## Contributing
+---
 
-Contributions are welcome! If you have suggestions for improvements or new features, please create a pull request or open an issue.
+## 🚀 Quick Start
 
-## License
+### 1. Clone & Install
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+```bash
+# Create virtual environment
+python -m venv .venv
+source .venv/Scripts/activate  # Windows
+# source .venv/bin/activate   # Linux/Mac
 
-## Contact
+# Install dependencies
+pip install -r requirements.txt
+```
 
-For any questions or support, please contact [Hailey Thao Quach](mailto:hailey@haileyq.com).
+### 2. Configure API Key
+
+Create a `.env` file:
+
+```env
+OPENAI_API_KEY=sk-your-openai-key-here
+```
+
+### 3. Run the Application
+
+```bash
+python app.py
+```
+
+### 4. Access the UI
+
+Open your browser to: **http://localhost:7860**
+
+---
+
+## 📱 Usage
+
+### Option 1: Recipe Suggestion
+
+1. Upload a photo of your meal
+2. Select workflow type: `recipe`
+3. Enter dietary restrictions (optional): `vegan`, `gluten-free`, `keto`
+4. Click **Submit**
+5. View generated recipes with ingredients, instructions, and calorie estimates
+
+### Option 2: Nutritional Analysis
+
+1. Upload a photo of your meal
+2. Select workflow type: `analysis`
+3. Click **Submit**
+4. View detailed nutrient breakdown including:
+   - Macronutrients (protein, carbs, fats)
+   - Vitamins (% Daily Value)
+   - Minerals
+   - Total calories
+   - Health evaluation
+
+---
+
+## 🔑 Key Features
+
+- ✅ **Multi-modal Input**: Process food images using GPT-4o vision
+- ✅ **Multi-Agent System**: Specialized agents for detection, filtering, analysis, and recipe generation
+- ✅ **Dietary Filtering**: Support for vegan, gluten-free, keto, and other diets
+- ✅ **Sequential Processing**: CrewAI process for ordered task execution
+- ✅ **Structured Output**: Pydantic models for type-safe responses
+- ✅ **User-Friendly UI**: Gradio interface with custom styling
+
+---
+
+## 📄 License
+
+MIT License - See LICENSE file for details
+
+---
+
+## 🙏 Acknowledgments
+
+- [CrewAI](https://crewai.com) - Multi-agent framework
+- [OpenAI](https://openai.com) - GPT-4o vision models
+- [Gradio](https://gradio.app) - UI framework
